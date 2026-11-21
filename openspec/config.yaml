@@ -1,0 +1,74 @@
+schema: spec-driven
+
+context: |
+  incident-hero is a public portfolio project: an AI on-call agent that diagnoses planted
+  faults in a small payments lab system and opens a minimal pull request fixing the root cause.
+  Built in public, one phase at a time (0 Infrastructure, 1 Diagnosis, 2 Evaluation, 3 Context,
+  4 Orchestration, 5 Hardening). Each phase ends with a git tag and a write-up with real numbers.
+
+  Headline claim (every change should move it or make it more trustworthy):
+    On held-out fault scenarios, incident-hero names the correct root cause in X% of runs with
+    evidence from telemetry; accuracy improves over time as lesson memory grows; and its PR fixes
+    the root cause minimally without lowering code quality - all on free local models.
+
+  Stack and constraints
+  - C# on .NET 11 (C# 15), .NET Aspire for local orchestration, xUnit + Aspire testing.
+  - Microsoft Agent Framework (pinned prerelease) on Microsoft.Extensions.AI.
+  - Models run locally through Ollama.
+    Model names live in configuration, never in code. No paid model in the default path.
+  - Lab services: payments-api -> ledger-api, settlement-worker consuming from RabbitMQ,
+    Postgres, OpenTelemetry into Grafana (Loki, Prometheus, Tempo). Docker Desktop on Windows.
+
+  Code style
+  - The point of the project is learning AI engineering; the lab and tooling exist to serve that,
+    so keep them as small and plain as possible.
+  - Simple, easy-to-read code that follows standard .NET practice: framework defaults and built-in
+    features first, plain C# over clever abstractions, no extra packages or layers without a reason.
+  - A reader new to the repo should be able to follow any file without the design doc open.
+
+  Faults and fixes
+  - Each scenario = defect patch (a real code/config/schema bug) + trigger (load, fake provider
+    behaviour) + reference fix + regression test that fails with the defect and passes with the fix.
+  - Phase 0 builds three scenarios: provider timeouts, missing index, poison message.
+    Bad config rollout and consumer lag join in phase 2, plus one unseen scenario.
+    Four variants each: v1-v2 learning set, v3-v4 held-out.
+  - The agent's only output is a pull request: a branch + PR.md in a throwaway local git worktree.
+    It never changes the running system and never merges. Real GitHub PRs only in a separate
+    incident-hero-sandbox repo, for demos.
+
+  Evaluation
+  - Record once, replay many: each variant is recorded live once into a telemetry snapshot
+    (logs, metrics, traces, alert.json, manifest.json). Diagnosis runs replay it through the same
+    ITelemetrySource interface used live. Live verification only for correct diagnoses.
+  - Diagnosis is structured: component + category (from ~12 categories) + mechanism + evidence +
+    confidence. Correct = exact component AND exact category AND no invented evidence.
+    Mechanism is scored separately by an LLM judge and never counts toward the headline.
+  - Every case runs at least 3 times; report rates, not single runs.
+  - PR gates: build with TreatWarningsAsErrors and analysers, dotnet format --verify-no-changes,
+    all tests plus the regression test, live re-trigger. Scope: no new packages, no edits outside
+    the faulty component, no edits to existing tests. Simplicity is reported as the diff size
+    relative to the reference fix, not gated.
+
+  Learning
+  - Lesson memory holds short structured lessons (symptom signature, root cause, discriminating
+    evidence, fix, what misled the agent), never transcripts. Postmortems propose at most 3 lessons,
+    merged with existing ones (update, combine or retire); a human approves before storage.
+  - Read path: top 3 lessons by symptom similarity (pgvector, filtered by service) under a
+    ~500-token budget via a MAF context provider. Learning is measured on held-out variants,
+    memory off vs on, plus a deliberately wrong lesson.
+
+  Out of scope: changing running systems, merging PRs, web UI, PagerDuty/Slack/Teams integrations,
+  paid models by default, Kubernetes, fine-tuning, general use on arbitrary codebases.
+
+rules:
+  proposal:
+    - Each change is a minimum deployable unit - after it, the lab still runs end to end and one manual check proves the new behaviour
+    - State what is out of scope for the change
+    - Say which part of the headline claim the change moves or protects
+  design:
+    - Always create design.md, even for small changes - understanding the mechanics is a goal of this project
+    - Include an "Under the hood" section explaining what the frameworks and tools do for the author, after Decisions
+    - Prefer the simplest option that works; when a decision picks something more complex, say why the simpler one is not enough
+  tasks:
+    - Break tasks into chunks of at most 1.5 hours (one evening session)
+    - End with a verification task that matches the proposal's check

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IncidentHero.AppHost/IncidentHero.AppHost.csproj" />
+    <Project Path="src/IncidentHero.ServiceDefaults/IncidentHero.ServiceDefaults.csproj" />
+    <Project Path="src/LedgerApi/LedgerApi.csproj" />
+    <Project Path="src/PaymentsApi/PaymentsApi.csproj" />
+  </Folder>
+</Solution>

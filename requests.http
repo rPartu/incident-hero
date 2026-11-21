@@ -1,0 +1,97 @@
+### Manual checks for the lab services. Start the AppHost first:
+###   dotnet run --project src/IncidentHero.AppHost
+### then run these one at a time from Visual Studio, VS Code (REST Client) or Rider.
+### The ports come from each project's Properties/launchSettings.json.
+
+@ledger = https://localhost:7004
+@payments = https://localhost:7232
+
+############################ ledger-api ############################
+
+### Entry recorded: 201 with an entry ID
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "idempotencyKey": "ledger-1", "accountId": "acc-1", "amountMinor": 1250, "currency": "GBP" }
+
+### Retried entry: run this after the request above; 201 with the same entry ID, balance unchanged
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "idempotencyKey": "ledger-1", "accountId": "acc-1", "amountMinor": 1250, "currency": "GBP" }
+
+### Reused key with a different entry: 409
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "idempotencyKey": "ledger-1", "accountId": "acc-1", "amountMinor": 9999, "currency": "GBP" }
+
+### Invalid entry (non-positive amount, no account ID): 400, nothing recorded
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "idempotencyKey": "ledger-invalid", "amountMinor": 0, "currency": "GBP" }
+
+### Missing idempotency key: 400, nothing recorded
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "accountId": "acc-1", "amountMinor": 1250, "currency": "GBP" }
+
+### Second entry, for the balance check
+POST {{ledger}}/entries
+Content-Type: application/json
+
+{ "idempotencyKey": "ledger-2", "accountId": "acc-1", "amountMinor": 750, "currency": "GBP" }
+
+### Balance after entries: GBP 2000 for acc-1 (after the requests above, before any payments)
+GET {{ledger}}/accounts/acc-1/balance
+
+### Unknown account: 200 with no balances
+GET {{ledger}}/accounts/acc-unknown/balance
+
+############################ payments-api ############################
+
+### Valid payment: 201 with a payment ID; one trace in the dashboard covers both services
+POST {{payments}}/payments
+Content-Type: application/json
+Idempotency-Key: pay-1
+
+{ "accountId": "acc-2", "amountMinor": 1250, "currency": "GBP" }
+
+### Retried payment: run after the request above; 201 with the same payment ID
+POST {{payments}}/payments
+Content-Type: application/json
+Idempotency-Key: pay-1
+
+{ "accountId": "acc-2", "amountMinor": 1250, "currency": "GBP" }
+
+### Reused key with a different payment: 409
+POST {{payments}}/payments
+Content-Type: application/json
+Idempotency-Key: pay-1
+
+{ "accountId": "acc-2", "amountMinor": 5000, "currency": "GBP" }
+
+### Missing idempotency key: 400, ledger-api not called
+POST {{payments}}/payments
+Content-Type: application/json
+
+{ "accountId": "acc-2", "amountMinor": 1250, "currency": "GBP" }
+
+### Zero amount: 400 naming AmountMinor, ledger-api not called
+POST {{payments}}/payments
+Content-Type: application/json
+Idempotency-Key: pay-zero
+
+{ "accountId": "acc-2", "amountMinor": 0, "currency": "GBP" }
+
+### Ledger unavailable: stop ledger-api in the dashboard first; 502 with no payment ID
+POST {{payments}}/payments
+Content-Type: application/json
+Idempotency-Key: pay-ledger-down
+
+{ "accountId": "acc-2", "amountMinor": 300, "currency": "GBP" }
+
+### acc-2 balance: includes each payment once
+GET {{ledger}}/accounts/acc-2/balance
