@@ -12,7 +12,7 @@
 
 ## 3. CI and docs (about 30 min)
 
-- [ ] 3.1 Add `.github/workflows/ci.yml` on `ubuntu-latest` (setup-dotnet from `global.json`, restore, build, format check, `dotnet dev-certs https --trust`, test) for pull requests and pushes to main, and verify the first run on main is green with the integration tests passing over https
+- [x] 3.1 Add `.github/workflows/ci.yml` on `ubuntu-latest` (setup-dotnet from `global.json`, restore, build, format check, `dotnet dev-certs https --trust`, test) for pull requests and pushes to main, and verify the first run on main is green with the integration tests passing over https
 - [x] 3.2 Add a "Quality gates" section to the README listing the three local commands, and verify they pass when run exactly as written
 
 ## 4. End-to-end check
