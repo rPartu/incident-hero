@@ -26,11 +26,13 @@ jobs:
 
       # The services talk https, and the dev certificate is not trusted on a fresh Linux runner.
       # On Linux, --trust puts the certificate in ~/.aspnet/dev-certs/trust, and OpenSSL only looks
-      # there when SSL_CERT_DIR includes it.
+      # there when SSL_CERT_DIR includes it. --trust checks that variable, so set it first, and keep
+      # it for the test step through GITHUB_ENV.
       - name: Trust the HTTPS development certificate
         run: |
+          export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
+          echo "SSL_CERT_DIR=$SSL_CERT_DIR" >> "$GITHUB_ENV"
           dotnet dev-certs https --trust
-          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Test
         run: dotnet test --no-build
