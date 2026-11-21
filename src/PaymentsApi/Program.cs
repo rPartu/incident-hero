@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpLogging;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using PaymentsApi;
@@ -9,11 +10,23 @@ builder.AddServiceDefaults();
 builder.Services.AddProblemDetails();
 builder.Services.AddValidation();
 
+// Logs each request and response, bodies included, as one log record so they show up under
+// Structured logs in the Aspire dashboard. Fine for the local lab; not something to keep in production.
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.RequestBody
+                    | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.ResponseBody;
+    o.RequestHeaders.Add("Idempotency-Key");
+    o.CombineLogs = true;
+});
+
 // "https+http://ledger-api" is a service discovery name, not a real host: it resolves to the
 // address the AppHost injects for ledger-api, preferring https.
 builder.Services.AddHttpClient<LedgerClient>(client => client.BaseAddress = new Uri("https+http://ledger-api"));
 
 var app = builder.Build();
+
+app.UseHttpLogging();
 
 app.MapDefaultEndpoints();
 

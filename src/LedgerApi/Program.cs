@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpLogging;
 using System.ComponentModel.DataAnnotations;
 using LedgerApi;
 
@@ -6,9 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddProblemDetails();
 builder.Services.AddValidation();
+
+// Logs each request and response, bodies included, as one log record so they show up under
+// Structured logs in the Aspire dashboard. Fine for the local lab; not something to keep in production.
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.RequestBody
+                    | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.ResponseBody;
+    o.RequestHeaders.Add("Idempotency-Key");
+    o.CombineLogs = true;
+});
 builder.Services.AddSingleton<ILedgerStore, InMemoryLedgerStore>();
 
 var app = builder.Build();
+
+app.UseHttpLogging();
 
 app.MapDefaultEndpoints();
 
