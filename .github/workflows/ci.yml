@@ -1,0 +1,36 @@
+# The quality gates: the same three commands as in the README, on every pull request and on main.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore
+
+      - name: Build (warnings are errors)
+        run: dotnet build --no-restore
+
+      - name: Check formatting
+        run: dotnet format --verify-no-changes --no-restore
+
+      # The services talk https, and the dev certificate is not trusted on a fresh Linux runner.
+      # On Linux, --trust puts the certificate in ~/.aspnet/dev-certs/trust, and OpenSSL only looks
+      # there when SSL_CERT_DIR includes it.
+      - name: Trust the HTTPS development certificate
+        run: |
+          dotnet dev-certs https --trust
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: dotnet test --no-build

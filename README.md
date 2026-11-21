@@ -66,6 +66,20 @@ comment. For example, post the "Valid payment" request, then open **Traces** in 
 one trace covers payments-api and ledger-api. The ledger is in memory, so data is lost when the
 AppHost stops.
 
+## Quality gates
+
+Every change must pass three checks, locally and in CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) on every pull request:
+
+```bash
+dotnet build
+dotnet format --verify-no-changes
+dotnet test
+```
+
+- `dotnet build` fails on any compiler or analyser warning (`Directory.Build.props` turns warnings into errors).
+- `dotnet format --verify-no-changes` fails when code doesn't match `.editorconfig`; run `dotnet format` to fix it.
+- `dotnet test` starts the whole lab through the AppHost and runs the integration tests in `tests/`.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).

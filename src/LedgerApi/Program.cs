@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.HttpLogging;
 using System.ComponentModel.DataAnnotations;
 using LedgerApi;
+using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 

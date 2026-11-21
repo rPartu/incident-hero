@@ -5,4 +5,7 @@
     <Project Path="src/LedgerApi/LedgerApi.csproj" />
     <Project Path="src/PaymentsApi/PaymentsApi.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IncidentHero.Tests/IncidentHero.Tests.csproj" />
+  </Folder>
 </Solution>

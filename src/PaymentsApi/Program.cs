@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.HttpLogging;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 using PaymentsApi;
 using Polly;

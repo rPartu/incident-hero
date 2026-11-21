@@ -1,0 +1,12 @@
+<Project>
+  <!-- Imported automatically by every project below this folder, so the quality gates live in one place. -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The SDK's default analyser rules; any finding (compiler or analyser) fails the build. -->
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Also enforce .editorconfig code style rules during build, so a style warning fails here too. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>
