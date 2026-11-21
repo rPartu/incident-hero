@@ -25,7 +25,6 @@ builder.Services.AddHttpLogging(o =>
 builder.Services.AddHttpClient<LedgerClient>(client => client.BaseAddress = new Uri("https+http://ledger-api"));
 
 var app = builder.Build();
-var unused = 42; // Deliberate warning (CS0219) to check that CI fails. Removed in the next commit.
 
 app.UseHttpLogging();
 

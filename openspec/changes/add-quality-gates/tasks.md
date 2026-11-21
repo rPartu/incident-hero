@@ -17,7 +17,7 @@
 
 ## 4. End-to-end check
 
-- [ ] 4.1 Open a PR with a deliberate warning and verify CI fails; remove it and verify CI passes
+- [x] 4.1 Open a PR with a deliberate warning and verify CI fails; remove it and verify CI passes
 
 ## Workflow follow-up
 
